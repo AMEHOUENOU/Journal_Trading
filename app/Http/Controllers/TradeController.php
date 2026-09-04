@@ -35,26 +35,36 @@ class TradeController extends Controller
 
         $validated = $this->validateTrade($request);
 
-        if ($request->hasFile('screenshot')) {
-            $validated['screenshot_path'] = $request->file('screenshot')->store('screenshots', 'public');
-        }
-
         $trade = $account->trades()->create($validated);
 
         if ($request->filled('tags')) {
             $trade->tags()->sync($request->input('tags'));
         }
 
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $trade->photos()->create([
+                    'path' => $photo->store('screenshots', 'public'),
+                ]);
+            }
+        }
+
         $this->recalculateAccountBalance($account);
 
-        return redirect()->route('accounts.show', $account)->with('success', 'Trade enregistré.');
+        return redirect()->route('trades.show', $trade)->with('success', 'Trade enregistré.');
     }
 
-   
+    public function show(Trade $trade)
+    {
+        $this->authorizeTrade($trade);
+        $trade->load('tags', 'photos', 'account');
+        return view('trades.show', compact('trade'));
+    }
 
     public function edit(Trade $trade)
     {
         $this->authorizeTrade($trade);
+        $trade->load('tags', 'photos');
         $tags = auth()->user()->tags;
         return view('trades.edit', ['trade' => $trade, 'account' => $trade->account, 'tags' => $tags]);
     }
@@ -65,19 +75,30 @@ class TradeController extends Controller
 
         $validated = $this->validateTrade($request);
 
-        if ($request->hasFile('screenshot')) {
-            if ($trade->screenshot_path) {
-                Storage::disk('public')->delete($trade->screenshot_path);
-            }
-            $validated['screenshot_path'] = $request->file('screenshot')->store('screenshots', 'public');
-        }
-
         $trade->update($validated);
         $trade->tags()->sync($request->input('tags', []));
 
+        // Supprimer les photos cochées
+        if ($request->filled('delete_photos')) {
+            $photosToDelete = $trade->photos()->whereIn('id', $request->input('delete_photos'))->get();
+            foreach ($photosToDelete as $photo) {
+                Storage::disk('public')->delete($photo->path);
+                $photo->delete();
+            }
+        }
+
+        // Ajouter les nouvelles photos
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $trade->photos()->create([
+                    'path' => $photo->store('screenshots', 'public'),
+                ]);
+            }
+        }
+
         $this->recalculateAccountBalance($trade->account);
 
-        return redirect()->route('accounts.show', $trade->account)->with('success', 'Trade mis à jour.');
+        return redirect()->route('trades.show', $trade)->with('success', 'Trade mis à jour.');
     }
 
     public function destroy(Trade $trade)
@@ -85,9 +106,10 @@ class TradeController extends Controller
         $this->authorizeTrade($trade);
         $account = $trade->account;
 
-        if ($trade->screenshot_path) {
-            Storage::disk('public')->delete($trade->screenshot_path);
+        foreach ($trade->photos as $photo) {
+            Storage::disk('public')->delete($photo->path);
         }
+
         $trade->delete();
 
         $this->recalculateAccountBalance($account);
@@ -173,7 +195,8 @@ class TradeController extends Controller
             'opened_at' => 'required|date',
             'closed_at' => 'nullable|date',
             'notes' => 'nullable|string',
-            'screenshot' => 'nullable|image|max:5120',
+            'photos.*' => 'nullable|image|max:5120',
+            'delete_photos' => 'nullable|array',
         ]);
     }
 
@@ -192,11 +215,4 @@ class TradeController extends Controller
     {
         abort_if($trade->account->user_id !== auth()->id(), 403);
     }
-
-    public function show(Trade $trade)
-{
-    $this->authorizeTrade($trade);
-    $trade->load('tags', 'photos', 'account');
-    return view('trades.show', compact('trade'));
-}
 }

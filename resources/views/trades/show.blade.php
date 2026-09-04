@@ -16,6 +16,12 @@
     <div class="py-8 bg-gray-950 min-h-screen">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
 
+            @if (session('success'))
+                <div class="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm rounded-lg">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
 
                 {{-- Header badges --}}
@@ -92,9 +98,9 @@
                     </div>
                 @endif
 
-                {{-- Photos gallery --}}
+                {{-- Photos gallery (multi) --}}
                 @if ($trade->photos->isNotEmpty())
-                    <div>
+                    <div class="mb-2">
                         <p class="text-xs text-gray-500 uppercase mb-2">Screenshots ({{ $trade->photos->count() }})</p>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             @foreach ($trade->photos as $photo)
@@ -103,6 +109,14 @@
                                 </a>
                             @endforeach
                         </div>
+                    </div>
+                @elseif ($trade->screenshot_path)
+                    {{-- fallback pour les trades créés avant le multi-photos --}}
+                    <div class="mb-2">
+                        <p class="text-xs text-gray-500 uppercase mb-2">Screenshot</p>
+                        <a href="{{ Storage::url($trade->screenshot_path) }}" target="_blank">
+                            <img src="{{ Storage::url($trade->screenshot_path) }}" class="rounded-lg w-full max-h-96 object-contain border border-gray-800 hover:opacity-80 transition">
+                        </a>
                     </div>
                 @endif
 

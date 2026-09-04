@@ -86,7 +86,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-800">
                         @forelse ($trades as $trade)
-                            <tr class="hover:bg-gray-800/50 transition">
+                            <tr class="hover:bg-gray-800/50 transition cursor-pointer" onclick="window.location='{{ route('trades.show', $trade) }}'">
                                 <td class="px-4 py-3 font-medium text-white">{{ $trade->symbol }}</td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full

@@ -94,9 +94,9 @@
                     </div>
 
                     <div class="mb-4">
-                        <x-input-label for="screenshot" value="Screenshot (optionnel)" />
-                        <input id="screenshot" name="screenshot" type="file" accept="image/*" class="mt-1 block w-full text-sm" />
-                        <x-input-error :messages="$errors->get('screenshot')" class="mt-2" />
+                        <x-input-label for="photos" value="Screenshots (optionnel, plusieurs possibles)" />
+                        <input id="photos" name="photos[]" type="file" accept="image/*" multiple class="mt-1 block w-full text-sm" />
+                        <x-input-error :messages="$errors->get('photos.0')" class="mt-2" />
                     </div>
 
                     <div class="mb-6">

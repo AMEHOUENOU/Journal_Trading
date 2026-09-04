@@ -7,12 +7,6 @@
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow rounded-lg p-6">
 
-                @if ($trade->screenshot_path)
-                    <div class="mb-4">
-                        <img src="{{ Storage::url($trade->screenshot_path) }}" alt="Screenshot" class="rounded-md max-h-48">
-                    </div>
-                @endif
-
                 <form method="POST" action="{{ route('trades.update', $trade) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
@@ -21,12 +15,13 @@
                         <div>
                             <x-input-label for="symbol" value="Symbole" />
                             <x-text-input id="symbol" name="symbol" type="text" class="mt-1 block w-full" :value="old('symbol', $trade->symbol)" required />
+                            <x-input-error :messages="$errors->get('symbol')" class="mt-2" />
                         </div>
                         <div>
                             <x-input-label for="direction" value="Direction" />
                             <select id="direction" name="direction" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
-                                <option value="long" {{ $trade->direction === 'long' ? 'selected' : '' }}>Long</option>
-                                <option value="short" {{ $trade->direction === 'short' ? 'selected' : '' }}>Short</option>
+                                <option value="long" {{ old('direction', $trade->direction) === 'long' ? 'selected' : '' }}>Long</option>
+                                <option value="short" {{ old('direction', $trade->direction) === 'short' ? 'selected' : '' }}>Short</option>
                             </select>
                         </div>
                     </div>
@@ -35,6 +30,7 @@
                         <div>
                             <x-input-label for="entry_price" value="Prix d'entrée" />
                             <x-text-input id="entry_price" name="entry_price" type="number" step="0.00001" class="mt-1 block w-full" :value="old('entry_price', $trade->entry_price)" required />
+                            <x-input-error :messages="$errors->get('entry_price')" class="mt-2" />
                         </div>
                         <div>
                             <x-input-label for="exit_price" value="Prix de sortie" />
@@ -57,6 +53,7 @@
                         <div>
                             <x-input-label for="position_size" value="Taille de position" />
                             <x-text-input id="position_size" name="position_size" type="number" step="0.01" class="mt-1 block w-full" :value="old('position_size', $trade->position_size)" required />
+                            <x-input-error :messages="$errors->get('position_size')" class="mt-2" />
                         </div>
                         <div>
                             <x-input-label for="pnl" value="P&L ($)" />
@@ -68,15 +65,17 @@
                         <x-input-label for="close_status" value="Statut de clôture" />
                         <select id="close_status" name="close_status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
                             @foreach (['open' => 'Ouvert', 'sl_hit' => 'SL touché', 'tp_hit' => 'TP touché', 'manual' => 'Clôturé manuellement', 'breakeven' => 'Breakeven'] as $value => $label)
-                                <option value="{{ $value }}" {{ $trade->close_status === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}" {{ old('close_status', $trade->close_status) === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
+                        <x-input-error :messages="$errors->get('close_status')" class="mt-2" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <x-input-label for="opened_at" value="Date/heure d'ouverture" />
                             <x-text-input id="opened_at" name="opened_at" type="datetime-local" class="mt-1 block w-full" :value="old('opened_at', $trade->opened_at->format('Y-m-d\TH:i'))" required />
+                            <x-input-error :messages="$errors->get('opened_at')" class="mt-2" />
                         </div>
                         <div>
                             <x-input-label for="closed_at" value="Date/heure de clôture" />
@@ -91,11 +90,35 @@
                                 <option value="{{ $tag->id }}" {{ $trade->tags->contains($tag->id) ? 'selected' : '' }}>{{ $tag->name }}</option>
                             @endforeach
                         </select>
+                        <p class="text-xs text-gray-500 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs tags.</p>
                     </div>
 
+                    @if ($trade->photos->isNotEmpty())
+                        <div class="mb-4">
+                            <x-input-label value="Photos actuelles" />
+                            <div class="grid grid-cols-3 gap-2 mt-2">
+                                @foreach ($trade->photos as $photo)
+                                    <div class="relative">
+                                        <img src="{{ Storage::url($photo->path) }}" class="rounded-md h-24 w-full object-cover">
+                                        <label class="absolute top-1 right-1 bg-white/90 rounded px-1.5 py-0.5 flex items-center gap-1 text-xs text-red-600 cursor-pointer shadow">
+                                            <input type="checkbox" name="delete_photos[]" value="{{ $photo->id }}">
+                                            Suppr.
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @elseif ($trade->screenshot_path)
+                        <div class="mb-4">
+                            <x-input-label value="Screenshot actuel" />
+                            <img src="{{ Storage::url($trade->screenshot_path) }}" class="rounded-md h-32 mt-2">
+                        </div>
+                    @endif
+
                     <div class="mb-4">
-                        <x-input-label for="screenshot" value="Remplacer le screenshot" />
-                        <input id="screenshot" name="screenshot" type="file" accept="image/*" class="mt-1 block w-full text-sm" />
+                        <x-input-label for="photos" value="Ajouter des photos" />
+                        <input id="photos" name="photos[]" type="file" accept="image/*" multiple class="mt-1 block w-full text-sm" />
+                        <x-input-error :messages="$errors->get('photos.0')" class="mt-2" />
                     </div>
 
                     <div class="mb-6">
@@ -110,7 +133,7 @@
                             <button type="submit" class="text-sm text-red-600 hover:underline">Supprimer ce trade</button>
                         </form>
                         <div class="flex gap-3">
-                            <a href="{{ route('accounts.show', $account) }}" class="px-4 py-2 text-sm text-gray-600">Annuler</a>
+                            <a href="{{ route('trades.show', $trade) }}" class="px-4 py-2 text-sm text-gray-600">Annuler</a>
                             <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
                                 Enregistrer
                             </button>
