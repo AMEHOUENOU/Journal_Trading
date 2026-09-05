@@ -97,4 +97,4 @@ L'application est accessible sur `http://127.0.0.1:8000`.
 
 ## Licence
 
-Projet personnel — non destiné à la distribution publique pour le moment.
+© 2026 Komi Amehouenou. Tous droits réservés. Ce code est visible publiquement à titre de portfolio, mais n'est pas sous licence libre d'utilisation.
