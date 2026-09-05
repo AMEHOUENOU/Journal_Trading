@@ -20,10 +20,29 @@ class TagController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(['name' => 'required|string|max:100']);
-        auth()->user()->tags()->create($validated);
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'entry_rules' => 'nullable|string',
+            'exit_rules' => 'nullable|string',
+        ]);
 
-        return redirect()->route('tags.index')->with('success', 'Tag créé.');
+        $tag = auth()->user()->tags()->create($validated);
+
+        return redirect()->route('tags.show', $tag)->with('success', 'Stratégie créée.');
+    }
+
+    public function show(Tag $tag)
+    {
+        $this->authorizeTag($tag);
+        $trades = $tag->trades()->latest('opened_at')->paginate(15);
+
+        return view('tags.show', [
+            'tag' => $tag,
+            'trades' => $trades,
+            'winRate' => $tag->winRate(),
+            'profitFactor' => $tag->profitFactor(),
+        ]);
     }
 
     public function edit(Tag $tag)
@@ -35,10 +54,17 @@ class TagController extends Controller
     public function update(Request $request, Tag $tag)
     {
         $this->authorizeTag($tag);
-        $validated = $request->validate(['name' => 'required|string|max:100']);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'entry_rules' => 'nullable|string',
+            'exit_rules' => 'nullable|string',
+        ]);
+
         $tag->update($validated);
 
-        return redirect()->route('tags.index')->with('success', 'Tag mis à jour.');
+        return redirect()->route('tags.show', $tag)->with('success', 'Stratégie mise à jour.');
     }
 
     public function destroy(Tag $tag)
@@ -46,7 +72,7 @@ class TagController extends Controller
         $this->authorizeTag($tag);
         $tag->delete();
 
-        return redirect()->route('tags.index')->with('success', 'Tag supprimé.');
+        return redirect()->route('tags.index')->with('success', 'Stratégie supprimée.');
     }
 
     private function authorizeTag(Tag $tag): void

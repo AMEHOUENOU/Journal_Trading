@@ -2,6 +2,14 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EconomicCalendarController;
+
+
+Route::resource('tags', TagController::class)->except(['show']);
+
+Route::resource('tags', TagController::class);
+
+Route::get('economic-calendar', [EconomicCalendarController::class, 'index'])->name('calendar.index');
 
 Route::get('/', function () {
     return view('welcome');
