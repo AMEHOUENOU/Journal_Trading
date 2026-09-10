@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -27,4 +28,9 @@ class Tag extends Model
         $grossLoss = abs($this->trades()->where('pnl', '<', 0)->sum('pnl'));
         return $grossLoss > 0 ? round($grossProfit / $grossLoss, 2) : null;
     }
+
+    public function instruments(): HasMany
+{
+    return $this->hasMany(StrategyInstrument::class);
+}
 }

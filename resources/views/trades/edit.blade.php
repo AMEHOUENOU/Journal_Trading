@@ -127,11 +127,10 @@
                     </div>
 
                     <div class="flex justify-between items-center">
-                        <form action="{{ route('trades.destroy', $trade) }}" method="POST" onsubmit="return confirm('Supprimer ce trade ?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-sm text-red-600 hover:underline">Supprimer ce trade</button>
-                        </form>
+                        <button type="button" data-confirm="Supprimer ce trade ?" onclick="document.getElementById('delete-trade-form').submit()"
+                            class="text-sm text-red-600 hover:underline">
+                            Supprimer ce trade
+                        </button>
                         <div class="flex gap-3">
                             <a href="{{ route('trades.show', $trade) }}" class="px-4 py-2 text-sm text-gray-600">Annuler</a>
                             <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
@@ -140,7 +139,24 @@
                         </div>
                     </div>
                 </form>
+
+                {{-- Formulaire de suppression totalement séparé, hors du form principal --}}
+                <form id="delete-trade-form" action="{{ route('trades.destroy', $trade) }}" method="POST" class="hidden">
+                    @csrf
+                    @method('DELETE')
+                </form>
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('[data-confirm]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                if (!confirm(this.dataset.confirm)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+            });
+        });
+    </script>
 </x-app-layout>

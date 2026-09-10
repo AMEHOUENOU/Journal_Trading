@@ -32,18 +32,7 @@ class TagController extends Controller
         return redirect()->route('tags.show', $tag)->with('success', 'Stratégie créée.');
     }
 
-    public function show(Tag $tag)
-    {
-        $this->authorizeTag($tag);
-        $trades = $tag->trades()->latest('opened_at')->paginate(15);
-
-        return view('tags.show', [
-            'tag' => $tag,
-            'trades' => $trades,
-            'winRate' => $tag->winRate(),
-            'profitFactor' => $tag->profitFactor(),
-        ]);
-    }
+    
 
     public function edit(Tag $tag)
     {
@@ -79,4 +68,18 @@ class TagController extends Controller
     {
         abort_if($tag->user_id !== auth()->id(), 403);
     }
+
+    public function show(Tag $tag)
+{
+    $this->authorizeTag($tag);
+    $trades = $tag->trades()->latest('opened_at')->paginate(15);
+    $tag->load('instruments');
+
+    return view('tags.show', [
+        'tag' => $tag,
+        'trades' => $trades,
+        'winRate' => $tag->winRate(),
+        'profitFactor' => $tag->profitFactor(),
+    ]);
+}
 }

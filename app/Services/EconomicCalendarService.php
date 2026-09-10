@@ -33,7 +33,10 @@ class EconomicCalendarService
 
         return Cache::remember(self::CACHE_KEY, now()->addMinutes(self::CACHE_MINUTES), function () {
             try {
-                $response = Http::timeout(5)->connectTimeout(3)->get(self::FEED_URL);
+                $response = Http::timeout(15)
+                ->connectTimeout(10)
+                ->withOptions(['force_ip_resolve' => 'v4'])
+                ->get(self::FEED_URL);
 
                 if (! $response->successful()) {
                     return [];

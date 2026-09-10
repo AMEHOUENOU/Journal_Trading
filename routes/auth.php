@@ -11,6 +11,11 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
+
+Route::post('tags/{tag}/instruments', [StrategyInstrumentController::class, 'store'])->name('tags.instruments.store');
+Route::put('tags/{tag}/instruments/{instrument}', [StrategyInstrumentController::class, 'update'])->name('tags.instruments.update');
+Route::delete('tags/{tag}/instruments/{instrument}', [StrategyInstrumentController::class, 'destroy'])->name('tags.instruments.destroy');
+
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');

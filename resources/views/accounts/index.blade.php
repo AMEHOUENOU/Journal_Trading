@@ -19,7 +19,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 @forelse ($accounts as $account)
-                    <div class="bg-white shadow rounded-lg p-6">
+                    <div class="bg-white shadow rounded-lg p-6 hover:shadow-md hover:border-indigo-300 border border-transparent transition cursor-pointer"
+                        onclick="window.location='{{ route('accounts.show', $account) }}'">
                         <div class="flex justify-between items-start">
                             <h3 class="text-lg font-bold text-gray-900">{{ $account->name }}</h3>
                             <span class="text-xs px-2 py-1 rounded-full {{ $account->current_balance >= $account->initial_balance ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
@@ -37,15 +38,19 @@
                             </p>
                         </div>
 
-                        <div class="mt-4 flex gap-2">
-                            <a href="{{ route('accounts.show', $account) }}" class="text-sm text-indigo-600 hover:underline">Voir</a>
+                        <div class="mt-4 flex gap-2" onclick="event.stopPropagation()">
                             <a href="{{ route('accounts.edit', $account) }}" class="text-sm text-gray-600 hover:underline">Modifier</a>
-                            <form action="{{ route('accounts.destroy', $account) }}" method="POST" onsubmit="return confirm('Supprimer ce compte et tous ses trades ?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-sm text-red-600 hover:underline">Supprimer</button>
-                            </form>
+                            <button type="button" data-confirm="Supprimer ce compte et tous ses trades ?"
+                                onclick="document.getElementById('delete-account-{{ $account->id }}').submit()"
+                                class="text-sm text-red-600 hover:underline">
+                                Supprimer
+                            </button>
                         </div>
+
+                        <form id="delete-account-{{ $account->id }}" action="{{ route('accounts.destroy', $account) }}" method="POST" class="hidden">
+                            @csrf
+                            @method('DELETE')
+                        </form>
                     </div>
                 @empty
                     <div class="col-span-3 text-center py-12 text-gray-500">
@@ -55,4 +60,15 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('[data-confirm]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                if (!confirm(this.dataset.confirm)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+            });
+        });
+    </script>
 </x-app-layout>

@@ -35,11 +35,10 @@
                     </div>
 
                     <div class="flex justify-between items-center">
-                        <form action="{{ route('tags.destroy', $tag) }}" method="POST" onsubmit="return confirm('Supprimer cette stratégie ?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-sm text-red-400 hover:text-red-300">Supprimer</button>
-                        </form>
+                        <button type="button" data-confirm="Supprimer cette stratégie ?" onclick="document.getElementById('delete-tag-form').submit()"
+                            class="text-sm text-red-400 hover:text-red-300">
+                            Supprimer
+                        </button>
                         <div class="flex gap-3">
                             <a href="{{ route('tags.show', $tag) }}" class="px-4 py-2 text-sm text-gray-400">Annuler</a>
                             <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-500 transition">
@@ -48,7 +47,24 @@
                         </div>
                     </div>
                 </form>
+
+                {{-- Formulaire de suppression totalement séparé, hors du form principal --}}
+                <form id="delete-tag-form" action="{{ route('tags.destroy', $tag) }}" method="POST" class="hidden">
+                    @csrf
+                    @method('DELETE')
+                </form>
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('[data-confirm]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                if (!confirm(this.dataset.confirm)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+            });
+        });
+    </script>
 </x-app-layout>

@@ -1,36 +1,25 @@
 <?php
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\TradeController;
+use App\Http\Controllers\TagController;
+use App\Http\Controllers\DailyNoteController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StrategyInstrumentController;
+use App\Http\Controllers\TradingScheduleController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EconomicCalendarController;
-
-
-Route::resource('tags', TagController::class)->except(['show']);
-
-Route::resource('tags', TagController::class);
-
-Route::get('economic-calendar', [EconomicCalendarController::class, 'index'])->name('calendar.index');
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-
-use App\Http\Controllers\AccountController;
-use App\Http\Controllers\TradeController;
-use App\Http\Controllers\TagController;
-use App\Http\Controllers\DailyNoteController;
-use App\Http\Controllers\DashboardController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -48,9 +37,17 @@ Route::middleware(['auth'])->group(function () {
     Route::put('trades/{trade}', [TradeController::class, 'update'])->name('trades.update');
     Route::delete('trades/{trade}', [TradeController::class, 'destroy'])->name('trades.destroy');
 
-    Route::resource('tags', TagController::class)->except(['show']);
-    Route::resource('daily-notes', DailyNoteController::class)->except(['show']);
-});
+    Route::resource('tags', TagController::class);
 
+    Route::post('tags/{tag}/instruments', [StrategyInstrumentController::class, 'store'])->name('tags.instruments.store');
+    Route::put('tags/{tag}/instruments/{instrument}', [StrategyInstrumentController::class, 'update'])->name('tags.instruments.update');
+    Route::delete('tags/{tag}/instruments/{instrument}', [StrategyInstrumentController::class, 'destroy'])->name('tags.instruments.destroy');
+
+    Route::get('trading-schedule', [TradingScheduleController::class, 'index'])->name('schedule.index');
+
+    Route::resource('daily-notes', DailyNoteController::class)->except(['show']);
+
+    Route::get('economic-calendar', [EconomicCalendarController::class, 'index'])->name('calendar.index');
+});
 
 require __DIR__.'/auth.php';
