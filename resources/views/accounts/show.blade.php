@@ -52,22 +52,54 @@
             </div>
 
             {{-- Filters --}}
-            <form method="GET" class="flex flex-wrap gap-3 mb-4">
-                <input type="text" name="symbol" value="{{ request('symbol') }}" placeholder="Rechercher un symbole..."
-                    class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 placeholder-gray-600 focus:border-indigo-500 focus:ring-0">
-                <select name="close_status" class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 focus:border-indigo-500 focus:ring-0">
-                    <option value="">Tous les statuts</option>
-                    <option value="sl_hit" {{ request('close_status') === 'sl_hit' ? 'selected' : '' }}>SL touché</option>
-                    <option value="tp_hit" {{ request('close_status') === 'tp_hit' ? 'selected' : '' }}>TP touché</option>
-                    <option value="manual" {{ request('close_status') === 'manual' ? 'selected' : '' }}>Manuel</option>
-                    <option value="breakeven" {{ request('close_status') === 'breakeven' ? 'selected' : '' }}>Breakeven</option>
-                    <option value="open" {{ request('close_status') === 'open' ? 'selected' : '' }}>Ouvert</option>
-                </select>
-                <button type="submit" class="text-sm px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition">
-                    Filtrer
-                </button>
-            </form>
+<form method="GET" class="flex flex-wrap gap-3 mb-4 items-center">
+    <input type="text" name="symbol" value="{{ request('symbol') }}" placeholder="Symbole..."
+        class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 placeholder-gray-600 focus:border-indigo-500 focus:ring-0">
 
+    <select name="close_status" class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 focus:border-indigo-500 focus:ring-0">
+        <option value="">Tous les statuts</option>
+        <option value="sl_hit" {{ request('close_status') === 'sl_hit' ? 'selected' : '' }}>SL touché</option>
+        <option value="tp_hit" {{ request('close_status') === 'tp_hit' ? 'selected' : '' }}>TP touché</option>
+        <option value="manual" {{ request('close_status') === 'manual' ? 'selected' : '' }}>Manuel</option>
+        <option value="breakeven" {{ request('close_status') === 'breakeven' ? 'selected' : '' }}>Breakeven</option>
+        <option value="open" {{ request('close_status') === 'open' ? 'selected' : '' }}>Ouvert</option>
+    </select>
+
+    <select name="direction" class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 focus:border-indigo-500 focus:ring-0">
+        <option value="">Long/Short</option>
+        <option value="long" {{ request('direction') === 'long' ? 'selected' : '' }}>Long</option>
+        <option value="short" {{ request('direction') === 'short' ? 'selected' : '' }}>Short</option>
+    </select>
+
+    <select name="result" class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 focus:border-indigo-500 focus:ring-0">
+        <option value="">Gagnant/Perdant</option>
+        <option value="win" {{ request('result') === 'win' ? 'selected' : '' }}>Gagnant</option>
+        <option value="loss" {{ request('result') === 'loss' ? 'selected' : '' }}>Perdant</option>
+    </select>
+
+    <select name="tag_id" class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 focus:border-indigo-500 focus:ring-0">
+        <option value="">Toutes stratégies</option>
+        @foreach ($tags as $tag)
+            <option value="{{ $tag->id }}" {{ request('tag_id') == $tag->id ? 'selected' : '' }}>{{ $tag->name }}</option>
+        @endforeach
+    </select>
+
+    <input type="date" name="date_from" value="{{ request('date_from') }}"
+        class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 focus:border-indigo-500 focus:ring-0">
+    <span class="text-gray-500 text-sm">→</span>
+    <input type="date" name="date_to" value="{{ request('date_to') }}"
+        class="bg-gray-900 border border-gray-800 text-gray-200 text-sm rounded-lg px-3 py-2 focus:border-indigo-500 focus:ring-0">
+
+    <button type="submit" class="text-sm px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition">
+        Filtrer
+    </button>
+
+    @if (request()->anyFilled(['symbol', 'close_status', 'direction', 'result', 'tag_id', 'date_from', 'date_to']))
+        <a href="{{ route('accounts.show', $account) }}" class="text-sm text-gray-400 hover:text-white transition">
+            Réinitialiser
+        </a>
+    @endif
+</form>
             {{-- Trades table --}}
             <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
                 <table class="min-w-full">

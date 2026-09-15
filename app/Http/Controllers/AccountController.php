@@ -35,18 +35,30 @@ class AccountController extends Controller
     }
 
     public function show(Account $account)
-    {
-        $this->authorizeAccount($account);
+{
+    $this->authorizeAccount($account);
 
-        $trades = $account->trades()->latest('opened_at')->paginate(20);
+    $trades = $account->trades()
+        ->when(request('symbol'), fn($q) => $q->where('symbol', 'like', '%' . request('symbol') . '%'))
+        ->when(request('close_status'), fn($q) => $q->where('close_status', request('close_status')))
+        ->when(request('direction'), fn($q) => $q->where('direction', request('direction')))
+        ->when(request('date_from'), fn($q) => $q->whereDate('opened_at', '>=', request('date_from')))
+        ->when(request('date_to'), fn($q) => $q->whereDate('opened_at', '<=', request('date_to')))
+        ->when(request('result') === 'win', fn($q) => $q->where('pnl', '>', 0))
+        ->when(request('result') === 'loss', fn($q) => $q->where('pnl', '<', 0))
+        ->when(request('tag_id'), fn($q) => $q->whereHas('tags', fn($tq) => $tq->where('tags.id', request('tag_id'))))
+        ->latest('opened_at')
+        ->paginate(20)
+        ->withQueryString();
 
-        return view('accounts.show', [
-            'account' => $account,
-            'trades' => $trades,
-            'winRate' => $account->winRate(),
-            'profitFactor' => $account->profitFactor(),
-        ]);
-    }
+    return view('accounts.show', [
+        'account' => $account,
+        'trades' => $trades,
+        'winRate' => $account->winRate(),
+        'profitFactor' => $account->profitFactor(),
+        'tags' => auth()->user()->tags,
+    ]);
+}
 
     public function edit(Account $account)
     {
