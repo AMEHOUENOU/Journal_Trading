@@ -51,6 +51,53 @@
                 </div>
             </div>
 
+            {{-- Répartition détaillée par statut, repliable --}}
+<div x-data="{ open: true }" class="bg-gray-900 border border-gray-800 rounded-xl mb-6 overflow-hidden">
+    <button @click="open = !open" class="w-full flex justify-between items-center px-5 py-3 text-left hover:bg-gray-800/50 transition">
+        <span class="text-sm font-semibold text-white">Répartition des trades</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+    </button>
+
+    <div x-show="open" x-collapse class="px-5 pb-5 border-t border-gray-800 pt-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-white">{{ $totalTradesCount }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">Total</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-emerald-400">{{ $resultCounts['win'] }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">Gagnants</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-red-400">{{ $resultCounts['loss'] }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">Perdants</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-gray-400">{{ $resultCounts['breakeven_pnl'] }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">Breakeven (PnL)</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-emerald-400">{{ $statusCounts['tp_hit'] }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">TP touché</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-red-400">{{ $statusCounts['sl_hit'] }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">SL touché</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-amber-400">{{ $statusCounts['manual'] }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">Manuel</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-blue-400">{{ $statusCounts['open'] }}</p>
+                <p class="text-[10px] text-gray-500 uppercase mt-1">Ouverts</p>
+            </div>
+        </div>
+    </div>
+</div>
+
             {{-- Filters --}}
 <form method="GET" class="flex flex-wrap gap-3 mb-4 items-center">
     <input type="text" name="symbol" value="{{ request('symbol') }}" placeholder="Symbole..."

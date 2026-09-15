@@ -51,12 +51,31 @@ class AccountController extends Controller
         ->paginate(20)
         ->withQueryString();
 
+    $allTrades = $account->trades;
+
+    $statusCounts = [
+        'sl_hit' => $allTrades->where('close_status', 'sl_hit')->count(),
+        'tp_hit' => $allTrades->where('close_status', 'tp_hit')->count(),
+        'manual' => $allTrades->where('close_status', 'manual')->count(),
+        'breakeven' => $allTrades->where('close_status', 'breakeven')->count(),
+        'open' => $allTrades->where('close_status', 'open')->count(),
+    ];
+
+    $resultCounts = [
+        'win' => $allTrades->where('pnl', '>', 0)->count(),
+        'loss' => $allTrades->where('pnl', '<', 0)->count(),
+        'breakeven_pnl' => $allTrades->where('pnl', 0)->count(),
+    ];
+
     return view('accounts.show', [
         'account' => $account,
         'trades' => $trades,
         'winRate' => $account->winRate(),
         'profitFactor' => $account->profitFactor(),
         'tags' => auth()->user()->tags,
+        'statusCounts' => $statusCounts,
+        'resultCounts' => $resultCounts,
+        'totalTradesCount' => $allTrades->count(),
     ]);
 }
 
