@@ -61,39 +61,54 @@
     </button>
 
     <div x-show="open" x-collapse class="px-5 pb-5 border-t border-gray-800 pt-4">
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-white">{{ $totalTradesCount }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">Total</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {{-- Compteurs --}}
+            <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-white">{{ $totalTradesCount }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">Total</p>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-emerald-400">{{ $resultCounts['win'] }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">Gagnants</p>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-red-400">{{ $resultCounts['loss'] }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">Perdants</p>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-gray-400">{{ $resultCounts['breakeven_pnl'] }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">Breakeven (PnL)</p>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-emerald-400">{{ $statusCounts['tp_hit'] }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">TP touché</p>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-red-400">{{ $statusCounts['sl_hit'] }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">SL touché</p>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-amber-400">{{ $statusCounts['manual'] }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">Manuel</p>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+                    <p class="text-lg font-bold text-blue-400">{{ $statusCounts['open'] }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase mt-1">Ouverts</p>
+                </div>
             </div>
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-emerald-400">{{ $resultCounts['win'] }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">Gagnants</p>
+
+            {{-- Graphique circulaire --}}
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 flex flex-col items-center justify-center">
+                @if ($totalTradesCount > 0)
+                    <canvas id="statusPieChart" class="max-h-48"></canvas>
+                @else
+                    <p class="text-sm text-gray-500 text-center py-8">Pas encore de trades à afficher.</p>
+                @endif
             </div>
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-red-400">{{ $resultCounts['loss'] }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">Perdants</p>
-            </div>
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-gray-400">{{ $resultCounts['breakeven_pnl'] }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">Breakeven (PnL)</p>
-            </div>
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-emerald-400">{{ $statusCounts['tp_hit'] }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">TP touché</p>
-            </div>
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-red-400">{{ $statusCounts['sl_hit'] }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">SL touché</p>
-            </div>
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-amber-400">{{ $statusCounts['manual'] }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">Manuel</p>
-            </div>
-            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-blue-400">{{ $statusCounts['open'] }}</p>
-                <p class="text-[10px] text-gray-500 uppercase mt-1">Ouverts</p>
-            </div>
+
         </div>
     </div>
 </div>
@@ -219,4 +234,40 @@
             </div>
         </div>
     </div>
+
+    @if ($totalTradesCount > 0)
+    @push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        const ctx = document.getElementById('statusPieChart');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['TP touché', 'SL touché', 'Manuel', 'Breakeven', 'Ouvert'],
+                datasets: [{
+                    data: [
+                        {{ $statusCounts['tp_hit'] }},
+                        {{ $statusCounts['sl_hit'] }},
+                        {{ $statusCounts['manual'] }},
+                        {{ $statusCounts['breakeven'] }},
+                        {{ $statusCounts['open'] }}
+                    ],
+                    backgroundColor: ['#34d399', '#f87171', '#fbbf24', '#9ca3af', '#60a5fa'],
+                    borderColor: '#0a0e1a',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#d1d5db', font: { size: 11 }, padding: 12 }
+                    }
+                }
+            }
+        });
+    </script>
+    @endpush
+@endif
 </x-app-layout>
